@@ -71,7 +71,7 @@ Boosted Tree regression.
 
 ## Experimental Design
 
-![System Diagram](./sys_design.svg)
+![System Diagram](./sys_design.jpg)
 
 ### Hardware & Software Requirements
 
