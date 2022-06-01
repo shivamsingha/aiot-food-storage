@@ -1,5 +1,15 @@
+#include <Adafruit_Sensor.h>
 #include <Arduino.h>
+#include <DHT.h>
+#include <DHT_U.h>
 #include <MQUnifiedsensor.h>
+
+#define DHTPIN 9      // Digital pin connected to the DHT sensor
+#define DHTTYPE DHT11 // DHT 11
+
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
+uint32_t DHTdelayMS;
 
 #define placa "Arduino MEGA"
 #define Voltage_Resolution 5
@@ -64,8 +74,61 @@ void setup() {
   /*****************************  MQ CAlibration
    * ********************************************/
   Serial.println("** Values from MQ-135 ****");
+
+  dht.begin();
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Temperature Sensor"));
+  Serial.print(F("Sensor Type: "));
+  Serial.println(sensor.name);
+  Serial.print(F("Driver Ver:  "));
+  Serial.println(sensor.version);
+  Serial.print(F("Unique ID:   "));
+  Serial.println(sensor.sensor_id);
+  Serial.print(F("Max Value:   "));
+  Serial.print(sensor.max_value);
+  Serial.println(F("°C"));
+  Serial.print(F("Min Value:   "));
+  Serial.print(sensor.min_value);
+  Serial.println(F("°C"));
+  Serial.print(F("Resolution:  "));
+  Serial.print(sensor.resolution);
+  Serial.println(F("°C"));
+  Serial.println(F("------------------------------------"));
+  // Print humidity sensor details.
+  dht.humidity().getSensor(&sensor);
+  Serial.println(F("Humidity Sensor"));
+  Serial.print(F("Sensor Type: "));
+  Serial.println(sensor.name);
+  Serial.print(F("Driver Ver:  "));
+  Serial.println(sensor.version);
+  Serial.print(F("Unique ID:   "));
+  Serial.println(sensor.sensor_id);
+  Serial.print(F("Max Value:   "));
+  Serial.print(sensor.max_value);
+  Serial.println(F("%"));
+  Serial.print(F("Min Value:   "));
+  Serial.print(sensor.min_value);
+  Serial.println(F("%"));
+  Serial.print(F("Resolution:  "));
+  Serial.print(sensor.resolution);
+  Serial.println(F("%"));
+  Serial.println(F("------------------------------------"));
+  // Set delay between sensor readings based on sensor details.
+  DHTdelayMS = sensor.min_delay / 1000;
+  Serial.print(F("Delay between readings: "));
+  Serial.print(DHTdelayMS);
+  Serial.println(F(" ms"));
+  Serial.println();
+
   Serial.println(
-      "|    CO   |  Alcohol |   CO2  |  Toluen  |  NH4  |  Aceton  |");
+    "|----------|----------|------------|----------|----------|----------|-----------|-----------|");
+  Serial.println(
+    "|    CO    |  Alcohol |    CO2     | Toluene  |   NH4    | Acetone  |   Temp    |  Humidity |");
+  Serial.println(
+    "|----------|----------|------------|----------|----------|----------|-----------|-----------|");
 }
 
 void loop() {
@@ -135,7 +198,26 @@ void loop() {
   Serial.print(NH4);
   Serial.print("   |   ");
   Serial.print(Aceton);
-  Serial.println("   |");
+
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  }
+  else {
+    Serial.print("   |   ");
+    Serial.print(event.temperature);
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  }
+  else {
+    Serial.print("   |   ");
+    Serial.print(event.relative_humidity);
+  }
+
   /*
     Exponential regression:
   GAS      | a      | b
@@ -147,5 +229,6 @@ void loop() {
   Aceton  | 34.668 | -3.369
   */
 
-  delay(500); // Sampling frequency
+  Serial.println("   |");
+  delay(DHTdelayMS); // Sampling frequency
 }
