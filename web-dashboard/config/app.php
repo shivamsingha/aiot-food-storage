@@ -196,7 +196,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
         App\Providers\JetstreamServiceProvider::class,
-
+        Vyuldashev\LaravelOpenApi\OpenApiServiceProvider::class,
     ],
 
     /*
