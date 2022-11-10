@@ -15,6 +15,8 @@
 		// "onecentlin.laravel-blade"
 	],
 	"remoteUser": "sail",
+	"postCreateCommand": "chown -R 1000:1000 /var/www/html && cp .env.example .env && composer install && php artisan key:generate && php artisan storage:link --force && php artisan migrate --force --seed && npm install",
+	"postStartCommand": "npm run dev",
 	// "forwardPorts": [],
 	// "runServices": [],
 	// "postCreateCommand": "apt-get update && apt-get install -y curl",
